@@ -39,6 +39,16 @@ def out_light(func):
     return result
 
 
+def draw_sphere(point: list[float], radius: float, color: list[int]):
+    glPushMatrix()
+    glTranslate(point[0], point[1], point[2])
+    set_material(color)
+    quadric = gluNewQuadric()
+    gluSphere(quadric, radius, 8, 8)
+    gluDeleteQuadric(quadric)
+    glPopMatrix()
+
+
 @out_light
 def draw_point(figure):
     glBegin(GL_POINTS)

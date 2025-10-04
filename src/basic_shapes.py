@@ -1,6 +1,23 @@
 from src.simple_3d_editor_imports import *
 
 
+class Star:
+    def __init__(
+            self, base_data: str, name: str, position: list[float],
+            move: list[float], size: float, lightning: float, color: list[int]
+    ):
+        self.name = name
+        self.position = list(position)
+        self.move = move
+        self.size = size
+        self.color = color
+        self.lightning = lightning
+        self.init_data = base_data
+
+    def draw_shape(self):
+        draw_sphere(self.position, self.size, self.color)
+
+
 class BasicShape:
     def __init__(self, name: str):
         self.name = name

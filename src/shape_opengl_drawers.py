@@ -39,7 +39,7 @@ def out_light(func):
     return result
 
 
-def draw_sphere(point: list[float], radius: float, color: list[int]):
+def draw_point_param(point: list[float], radius: float, color: list[int]):
     glPushMatrix()
     glTranslate(point[0], point[1], point[2])
     set_material(color)
@@ -49,16 +49,7 @@ def draw_sphere(point: list[float], radius: float, color: list[int]):
     glPopMatrix()
 
 
-@out_light
-def draw_point(figure):
-    glBegin(GL_POINTS)
-    glColor3fv(POINT_COLOR[:3])
-    glVertex3f(figure.x, figure.y, figure.z)
-    glEnd()
-
-
-@out_light
-def draw_segment(figure, color=SEGMENT_COLOR):
+def draw_segment(figure: Segment, color=SEGMENT_COLOR):
     glBegin(GL_LINES)
     glColor3fv(color[:3])
     glVertex3fv(figure.point_a.np_vector)
@@ -66,51 +57,9 @@ def draw_segment(figure, color=SEGMENT_COLOR):
     glEnd()
 
 
-@out_light
-def draw_contur2(points, color=SEGMENT_COLOR):
-    glBegin(GL_LINE_LOOP)
-    glColor3fv(color[:3])
-    for point in points:
-        glVertex3fv(point.np_vector)
-    glEnd()
-
-
-def draw_figure2(figure, inner_point=None):
-    set_material(FIGURE2_COLOR)
-    first_point = figure.points[0].np_vector
-    normal_vec = find_normal_figure2(figure, inner_point)
-    for i in range(2, len(figure.points)):
-        glBegin(GL_POLYGON)
-        glNormal3fv(normal_vec)
-        glVertex3fv(first_point)
-        glVertex3fv(figure.points[i - 1].np_vector)
-        glVertex3fv(figure.points[i].np_vector)
-        glEnd()
-    draw_contur2(figure.points, color=EDGE_COLOR)
-
-
-def draw_plane(figure):
-    set_material(PLANE_COLOR)
-    glBegin(GL_POLYGON)
-    glNormal3fv(figure.normal)
-    if len(figure.contur) > 0:
-        for segment in figure.contur[0].segments:
-            glVertex3fv(segment.point_a.np_vector)
-        glEnd()
-        draw_contur2([el.point_a for el in figure.contur[0].segments])
-    else:
-        # не забыть: size меньше 2000,
-        size = 1000
-        glVertex3f(size, size, figure.count_new_z(size, size))
-        glVertex3f(size, -size, figure.count_new_z(size, -size))
-        glVertex3f(-size, -size, figure.count_new_z(-size, -size))
-        glVertex3f(-size, size, figure.count_new_z(-size, size))
-        glEnd()
-
-
-def draw_figure3(figure):
-    for face in figure.faces:
-        draw_figure2(face, figure.get_center())
+def draw_constellation(figure: Constellation):
+    for el in figure.segments:
+        draw_segment(el)
 
 
 def draw_light(figure):

@@ -1,4 +1,4 @@
-from src.qt_app import *
+from src.sky_and_stars_imports import *
 
 
 class ListStringsInput(QWidget):

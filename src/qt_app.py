@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-from src.simple_3d_editor_imports import *
+from src.sky_and_stars_imports import *
+from src.point_vector import PointVector
+from src.adding_windows import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
 from tkinter import filedialog
 
 
@@ -10,20 +15,14 @@ class GLWidget(QGLWidget):
         self.scene = scene
         self.camera_rotation_angle = 0
         self.camera_lifting_angle = math.pi / 9
-        self.camera_distance = 5
+        self.camera_fov_angle = 5
+        self.camera_position = PointVector(0, 0, 0)
         self.frame_counter = 0
-        self.basis_p_0 = Point("", 0, 0, 0)
-        self.basis_p_x = Point("", 1, 0, 0)
-        self.basis_p_y = Point("", 0, 1, 0)
-        self.basis_p_z = Point("", 0, 0, 1)
-        self.basis_x = Segment("", self.basis_p_x, self.basis_p_0)
-        self.basis_y = Segment("", self.basis_p_y, self.basis_p_0)
-        self.basis_z = Segment("", self.basis_p_z, self.basis_p_0)
         self.basis_render_size = 0.3
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
-        glClearColor(0, 0, 0, 1.0)
+        glClearColor(0, 0, 0.05, 1.0)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [1.0, 1.0, 1.0, 1])
@@ -36,10 +35,9 @@ class GLWidget(QGLWidget):
         # glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         # включение нормалей
         glEnable(GL_NORMALIZE)
-        # glLineWidth(2.0)
-        # glEnable(GL_LINE_SMOOTH)
-        # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        # glPointSize(4.0)
+        glEnable(GL_LINE_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        glPointSize(4.0)
         glEnable(GL_POINT_SMOOTH)
         glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
 
@@ -48,21 +46,32 @@ class GLWidget(QGLWidget):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(70, self.width() / self.height(), 0.1, 100.0)
+        vector_view = self.get_view_vector()
         gluLookAt(
-            math.cos(self.camera_rotation_angle) *
-            math.cos(self.camera_lifting_angle) * self.camera_distance,
-            math.sin(self.camera_rotation_angle) *
-            math.cos(self.camera_lifting_angle) * self.camera_distance,
-            math.sin(self.camera_lifting_angle) * self.camera_distance,
-            0, 0, 0,
+            self.camera_position.x,
+            self.camera_position.y,
+            self.camera_position.z,
+            self.camera_position.x + vector_view.x,
+            self.camera_position.y + vector_view.y,
+            self.camera_position.z + vector_view.z,
             0, 0, 1
         )
         self.frame_counter += 1
 
-        for name, entity in self.scene.entities.items():
+        draw_coordinate_sphere_by_position(self.camera_position)
+        for entity in self.scene.get_entities():
             entity.draw_shape()
 
         self.update()
+
+    def get_view_vector(self):
+        return PointVector(
+            math.cos(self.camera_rotation_angle) *
+            math.cos(self.camera_lifting_angle),
+            math.sin(self.camera_rotation_angle) *
+            math.cos(self.camera_lifting_angle),
+            math.sin(self.camera_lifting_angle),
+        )
 
     def resizeGL(self, w, h):
         glViewport(0, 0, w, h)
@@ -88,7 +97,7 @@ class MainWindow(QMainWindow):
 
         self.openGL_widget = GLWidget(scene=self.scene)
         uic.loadUi("src/untitled.ui", self)
-        self.setWindowTitle("SimpleBlender")
+        self.setWindowTitle("Sky And Stars")
         self.OpenGLContainer.layout().addWidget(self.openGL_widget)
 
         self.adding_page.layout().addWidget(
@@ -106,7 +115,7 @@ class MainWindow(QMainWindow):
 
     def init_tree_interaction(self):
         def tree_clicked(item, column):
-            entity = self.scene.entities[item.text(0)]
+            entity = self.scene._entities[item.text(0)]
             options = entity.get_edit_params()
             self.label_name_view.setText(entity.name)
             self.double_edit_x.setValue(entity.x)
@@ -182,10 +191,10 @@ class MainWindow(QMainWindow):
         self.scroll_lifting.setValue(-20)
         self.scroll_lifting.valueChanged.connect(self.set_camera_lifting)
         self.scroll_zooming.setRange(1, 20)
-        self.scroll_zooming.setValue(self.openGL_widget.camera_distance)
+        self.scroll_zooming.setValue(self.openGL_widget.camera_fov_angle)
         self.scroll_zooming.valueChanged.connect(self.set_camera_distance)
         self.spinbox_zooming.setRange(1, 300)
-        self.spinbox_zooming.setValue(self.openGL_widget.camera_distance)
+        self.spinbox_zooming.setValue(self.openGL_widget.camera_fov_angle)
         self.spinbox_zooming.setSingleStep(0.05)
         self.spinbox_zooming.valueChanged.connect(self.set_camera_distance)
         layout = QHBoxLayout()
@@ -205,7 +214,7 @@ class MainWindow(QMainWindow):
             self.spinbox_zooming.setRange(
                 1, max(distance + 1, self.spinbox_zooming.maximum())
             )
-        self.openGL_widget.camera_distance = distance
+        self.openGL_widget.camera_fov_angle = distance
         self.scroll_zooming.setValue(int(distance))
         self.spinbox_zooming.setValue(float(distance))
 

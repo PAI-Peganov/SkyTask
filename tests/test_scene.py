@@ -1,4 +1,4 @@
-from src.simple_3d_editor_imports import *
+from src.sky_and_stars_imports import *
 import unittest
 from unittest.mock import MagicMock
 
@@ -41,7 +41,7 @@ class TestScene(unittest.TestCase):
     def test_initialization(self):
         self.assertIsNone(self.scene.path)
         self.assertEqual(self.scene.app_update, self.mock_update)
-        self.assertEqual(self.scene.entities, {})
+        self.assertEqual(self.scene._entities, {})
         self.assertEqual(len(self.scene.stack_last_actions), 0)
         self.assertEqual(len(self.scene.stack_undo_actions), 0)
 
@@ -66,37 +66,37 @@ class TestScene(unittest.TestCase):
 
     def test_check_contains_errors_empty_field(self):
         with self.assertRaises(EmptyFieldException):
-            self.scene.check_contains_errors(("", Point))
+            self.scene.check_contains_errors(("", PointVector))
 
     def test_check_contains_errors_entity_not_found(self):
         with self.assertRaises(EntityNotFoundException):
-            self.scene.check_contains_errors(("nonexistent", Point))
+            self.scene.check_contains_errors(("nonexistent", PointVector))
 
     def test_check_contains_errors_wrong_type(self):
-        self.scene.entities['test'] = "not_a_point"
+        self.scene._entities['test'] = "not_a_point"
         with self.assertRaises(EntityWrongTypeException):
-            self.scene.check_contains_errors(("test", Point))
+            self.scene.check_contains_errors(("test", PointVector))
 
     def test_check_contains_errors_name_exists(self):
-        self.scene.entities['existing'] = "something"
+        self.scene._entities['existing'] = "something"
         with self.assertRaises(EntityNameAlreadyExistsException):
             self.scene.check_contains_errors(new_entity="existing")
 
     def test_add_point(self):
         self.scene.add_point("test_point", 1.0, 2.0, 3.0)
-        self.assertIn("test_point", self.scene.entities)
+        self.assertIn("test_point", self.scene._entities)
         self.mock_update.assert_called_once()
 
     def test_add_light(self):
         self.scene.add_light("test_light", "lightGL", 1.0, 2.0, 3.0)
-        self.assertIn("test_light", self.scene.entities)
+        self.assertIn("test_light", self.scene._entities)
         self.mock_update.assert_called_once()
 
     def test_add_segment(self):
         self.scene.add_point("point_a", 0.0, 0.0, 0.0)
         self.scene.add_point("point_b", 1.0, 1.0, 1.0)
         self.scene.add_segment("test_segment", "point_a", "point_b")
-        self.assertIn("test_segment", self.scene.entities)
+        self.assertIn("test_segment", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_figure2(self):
@@ -104,14 +104,14 @@ class TestScene(unittest.TestCase):
         self.scene.add_point("point2", 1.0, 0.0, 0.0)
         self.scene.add_point("point3", 0.5, 1.0, 0.0)
         self.scene.add_figure2("test_figure", ["point1", "point2", "point3"])
-        self.assertIn("test_figure", self.scene.entities)
+        self.assertIn("test_figure", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_figure2_n(self):
         self.scene.add_figure2_n("test_figure", 4, 1.0)
-        self.assertIn("test_figure", self.scene.entities)
+        self.assertIn("test_figure", self.scene._entities)
         self.assertEqual(
-            len([k for k in self.scene.entities.keys()
+            len([k for k in self.scene._entities.keys()
                  if k.startswith("figure2_point_test_figure_")]), 4
         )
         self.mock_update.assert_called()
@@ -123,7 +123,7 @@ class TestScene(unittest.TestCase):
         self.scene.add_plane_by_points(
             "test_plane", "point1", "point2", "point3"
         )
-        self.assertIn("test_plane", self.scene.entities)
+        self.assertIn("test_plane", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_plane_by_point_and_segment(self):
@@ -134,7 +134,7 @@ class TestScene(unittest.TestCase):
         self.scene.add_plane_by_point_and_segment(
             "test_plane", "point1", "test_segment"
         )
-        self.assertIn("test_plane", self.scene.entities)
+        self.assertIn("test_plane", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_plane_by_plane(self):
@@ -146,7 +146,7 @@ class TestScene(unittest.TestCase):
         )
         self.scene.add_point("new_point", 0.0, 0.0, 1.0)
         self.scene.add_plane_by_plane("test_plane", "new_point", "base_plane")
-        self.assertIn("test_plane", self.scene.entities)
+        self.assertIn("test_plane", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_contur_to_plane(self):
@@ -162,7 +162,7 @@ class TestScene(unittest.TestCase):
         self.scene.add_contur_to_plane(
             "test_plane", ["segment1", "segment2", "segment3"]
         )
-        self.assertEqual(len(self.scene.entities["test_plane"].contur), 1)
+        self.assertEqual(len(self.scene._entities["test_plane"].contur), 1)
         self.mock_update.assert_called()
 
     def test_add_contur_n_to_plane(self):
@@ -173,7 +173,7 @@ class TestScene(unittest.TestCase):
             "test_plane", "point1", "point2", "point3"
         )
         self.scene.add_contur_n_to_plane("test_plane", 4, 1.0)
-        self.assertEqual(len(self.scene.entities["test_plane"].contur), 1)
+        self.assertEqual(len(self.scene._entities["test_plane"].contur), 1)
         self.mock_update.assert_called()
 
     def test_add_figure3(self):
@@ -182,37 +182,37 @@ class TestScene(unittest.TestCase):
         self.scene.add_point("point3", 0.5, 1.0, 0.0)
         self.scene.add_figure2("face1", ["point1", "point2", "point3"])
         self.scene.add_figure3("test_figure3", ["face1"])
-        self.assertIn("test_figure3", self.scene.entities)
+        self.assertIn("test_figure3", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_prism_n(self):
         self.scene.add_prism_n("test_prism", 4, 1.0, 2.0)
-        self.assertIn("test_prism", self.scene.entities)
+        self.assertIn("test_prism", self.scene._entities)
         self.assertEqual(
-            len([k for k in self.scene.entities.keys()
+            len([k for k in self.scene._entities.keys()
                  if k.startswith("pnt_upr_test_prism_")]), 4
         )
         self.assertEqual(
-            len([k for k in self.scene.entities.keys()
+            len([k for k in self.scene._entities.keys()
                  if k.startswith("pnt_lwr_test_prism_")]), 4
         )
         self.mock_update.assert_called()
 
     def test_add_pyramid_n(self):
         self.scene.add_pyramid_n("test_pyramid", 4, 1.0, 2.0)
-        self.assertIn("test_pyramid", self.scene.entities)
+        self.assertIn("test_pyramid", self.scene._entities)
         self.assertEqual(
-            len([k for k in self.scene.entities.keys()
+            len([k for k in self.scene._entities.keys()
                  if k.startswith("pnt_lwr_test_pyramid_")]), 4
         )
-        self.assertIn("pnt_upr_test_pyramid", self.scene.entities)
+        self.assertIn("pnt_upr_test_pyramid", self.scene._entities)
         self.mock_update.assert_called()
 
     def test_add_sphere_nm(self):
         self.scene.add_sphere_nm("test_sphere", 4, 3, 1.0)
-        self.assertIn("test_sphere", self.scene.entities)
-        self.assertIn("pnt_up_test_sphere", self.scene.entities)
-        self.assertIn("pnt_down_test_sphere", self.scene.entities)
+        self.assertIn("test_sphere", self.scene._entities)
+        self.assertIn("pnt_up_test_sphere", self.scene._entities)
+        self.assertIn("pnt_down_test_sphere", self.scene._entities)
         self.mock_update.assert_called()
 
 

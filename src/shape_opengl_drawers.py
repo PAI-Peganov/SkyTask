@@ -1,6 +1,10 @@
+from src.sky_and_stars_imports import SEGMENT_COLOR
+from src.basic_shapes import *
+from src.point_vector import PointVector
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
 import numpy as np
-
-from src.simple_3d_editor_imports import *
 
 
 def set_material(
@@ -21,16 +25,6 @@ def set_material(
     glMaterialfv(GL_FRONT, GL_SHININESS, shininess)
 
 
-def find_normal_figure2(figure, inner_point):
-    points = [el.np_vector for el in figure.points]
-    q = np.mean(points, axis=0)
-    matrix = np.array([el - q for el in points])
-    _, _, right_matrix = np.linalg.svd(matrix)
-    if inner_point is None or np.dot(q - inner_point, right_matrix[2]) > 0:
-        return right_matrix[2]
-    return right_matrix[2] * (-1)
-
-
 def out_light(func):
     def result(*args, **kwargs):
         glDisable(GL_LIGHTING)
@@ -39,14 +33,23 @@ def out_light(func):
     return result
 
 
-def draw_point_param(point: list[float], radius: float, color: list[int]):
-    glPushMatrix()
+def draw_sphere_param(point: PointVector, radius: float, color: list[int]):
+    #glPushMatrix()
     glTranslate(point[0], point[1], point[2])
     set_material(color)
     quadric = gluNewQuadric()
     gluSphere(quadric, radius, 8, 8)
     gluDeleteQuadric(quadric)
-    glPopMatrix()
+    glTranslate(0, 0, 0)
+    #glPopMatrix()
+
+
+def draw_point_param(point: PointVector, radius: float, color: list[int]):
+    glBegin(GL_POINTS)
+    glPointSize(radius)
+    glColor3fv(color)
+    glVertex3f(point.x, point.y, point.z)
+    glEnd()
 
 
 def draw_segment(figure: Segment, color=SEGMENT_COLOR):
@@ -60,6 +63,15 @@ def draw_segment(figure: Segment, color=SEGMENT_COLOR):
 def draw_constellation(figure: Constellation):
     for el in figure.segments:
         draw_segment(el)
+
+
+def draw_coordinate_sphere_by_position(position: PointVector):
+    glTranslatef(position.x, position.y, position.z)
+    glLineWidth(1.0)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    glutWireSphere(5.0, 24, 18)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+    glTranslatef(0.0, 0.0, 0.0)
 
 
 def draw_light(figure):

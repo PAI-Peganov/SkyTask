@@ -17,10 +17,7 @@ ERROR_QT_VERSION = 5
 ERROR_OPENGL_VERSION = 6
 ERROR_NUMPY_VERSION = 6
 
-PLANE_COLOR = [0.2, 0.7, 0.3, 1.0]
-FIGURE2_COLOR = [0.2, 0.2, 0.9, 1.0]
 SEGMENT_COLOR = [0.0, 0.9, 0.6, 1.0]
-EDGE_COLOR = [0.0, 0.0, 0.0, 1.0]
 POINT_COLOR = [1.0, 0.0, 0.0, 1.0]
 
 if sys.version_info < (3, 10):
@@ -47,6 +44,7 @@ except Exception as e:
 try:
     from OpenGL.GL import *
     from OpenGL.GLU import *
+    from OpenGL.GLUT import *
 except Exception as e:
     print('OpenGL not found: "{}".'.format(e),
           file=sys.stderr)
@@ -60,6 +58,7 @@ except Exception as e:
     sys.exit(ERROR_NUMPY_VERSION)
 
 try:
+    from src.point_vector import PointVector
     from src.shape_opengl_drawers import *
     from src.basic_shapes import *
     from src.scene_base import *

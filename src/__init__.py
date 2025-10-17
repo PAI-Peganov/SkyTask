@@ -1,1 +1,1 @@
-from src.simple_3d_editor_imports import *
+from src.sky_and_stars_imports import *

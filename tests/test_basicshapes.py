@@ -1,4 +1,4 @@
-from src.simple_3d_editor_imports import *
+from src.sky_and_stars_imports import *
 import unittest
 from unittest.mock import MagicMock
 
@@ -37,7 +37,7 @@ class TestBasicShape(unittest.TestCase):
 
 class TestPoint(unittest.TestCase):
     def setUp(self):
-        self.point = Point("test_point", 1.0, 2.0, 3.0)
+        self.point = PointVector("test_point", 1.0, 2.0, 3.0)
 
     def test_initialization(self):
         self.assertEqual(self.point.name, "test_point")
@@ -65,8 +65,8 @@ class TestLightPoint(unittest.TestCase):
 
 class TestSegment(unittest.TestCase):
     def setUp(self):
-        self.point_a = Point("point_a", 0.0, 0.0, 0.0)
-        self.point_b = Point("point_b", 1.0, 1.0, 1.0)
+        self.point_a = PointVector("point_a", 0.0, 0.0, 0.0)
+        self.point_b = PointVector("point_b", 1.0, 1.0, 1.0)
         self.segment = Segment("test_segment", self.point_a, self.point_b)
 
     def test_initialization(self):
@@ -89,7 +89,7 @@ class TestSegment(unittest.TestCase):
 
 class TestFigure2(unittest.TestCase):
     def setUp(self):
-        self.points = [Point(f"point_{i}", i, i, i) for i in range(3)]
+        self.points = [PointVector(f"point_{i}", i, i, i) for i in range(3)]
         self.figure = Figure2("test_figure", self.points)
 
     def test_initialization(self):
@@ -110,7 +110,7 @@ class TestFigure2(unittest.TestCase):
 
 class TestPlane(unittest.TestCase):
     def setUp(self):
-        self.point = Point("plane_point", 0.0, 0.0, 0.0)
+        self.point = PointVector("plane_point", 0.0, 0.0, 0.0)
         self.plane = Plane("test_plane", self.point)
 
     def test_initialization(self):
@@ -128,7 +128,7 @@ class TestPlane(unittest.TestCase):
         self.assertEqual(z, -2.0)
 
     def test_add_contur(self):
-        segment = Segment("seg", Point("p1", 0, 0, 0), Point("p2", 1, 1, 1))
+        segment = Segment("seg", PointVector("p1", 0, 0, 0), PointVector("p2", 1, 1, 1))
         contur = Contur2("contur", [segment])
         self.plane.add_contur(contur)
         self.assertEqual(len(self.plane.contur), 1)
@@ -136,7 +136,7 @@ class TestPlane(unittest.TestCase):
 
 class TestPlaneBy3Point(unittest.TestCase):
     def setUp(self):
-        self.points = [Point(f"point_{i}", i, i, i) for i in range(3)]
+        self.points = [PointVector(f"point_{i}", i, i, i) for i in range(3)]
         self.plane = PlaneBy3Point("test_plane", *self.points)
 
     def test_initialization(self):
@@ -167,9 +167,9 @@ class TestPlaneBy3Point(unittest.TestCase):
 
 class TestPlaneByPointSegment(unittest.TestCase):
     def setUp(self):
-        self.point = Point("point", 0, 0, 0)
+        self.point = PointVector("point", 0, 0, 0)
         self.segment = Segment(
-            "seg", Point("p1", 1, 1, 1), Point("p2", 2, 2, 2)
+            "seg", PointVector("p1", 1, 1, 1), PointVector("p2", 2, 2, 2)
         )
         self.plane = PlaneByPointSegment(
             "test_plane", self.point, self.segment
@@ -183,10 +183,10 @@ class TestPlaneByPointSegment(unittest.TestCase):
 
 class TestPlaneByPlane(unittest.TestCase):
     def setUp(self):
-        self.base_point = Point("base_point", 0, 0, 0)
+        self.base_point = PointVector("base_point", 0, 0, 0)
         self.base_plane = Plane("base_plane", self.base_point)
         self.base_plane.normal = np.array([1, 1, 1])
-        self.point = Point("point", 1, 1, 1)
+        self.point = PointVector("point", 1, 1, 1)
         self.plane = PlaneByPlane("test_plane", self.point, self.base_plane)
 
     def test_initialization(self):
@@ -209,7 +209,7 @@ class TestPlaneByPlane(unittest.TestCase):
 
 class TestFigure3(unittest.TestCase):
     def setUp(self):
-        points = [Point(f"point_{i}", i, i, i) for i in range(3)]
+        points = [PointVector(f"point_{i}", i, i, i) for i in range(3)]
         faces = [Figure2(f"face_{i}", points) for i in range(3)]
         self.figure = Figure3("test_figure", faces)
 

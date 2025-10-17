@@ -4,10 +4,10 @@ Simple3DEditor
 Author
     Peganov Artyom (Пеганов Артём) artyompeganov428@gmail.com
 Starting App
-    For start App run simple_3d_editor.py
+    For start App run sky_and_stars.py
 
 Take Help
-    py simple_3d_editor --help
+    py sky_and_stars.py --help
 Features
     "Save" button to save scene as pkl file
     "Load" button to load scene from pkl file

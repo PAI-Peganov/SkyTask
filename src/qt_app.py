@@ -2,6 +2,7 @@
 
 from src.sky_and_stars_imports import *
 from src.point_vector import PointVector
+from src.shape_opengl_drawers import draw_coordinate_sphere_by_position
 from src.adding_windows import *
 from OpenGL.GL import *
 from OpenGL.GLU import *

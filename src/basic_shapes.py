@@ -12,7 +12,7 @@ class BasicShape:
         
 class Star(BasicShape):
     def __init__(
-            self, base_data: str, name: str,
+            self, name: str,
             position: PointVector, move: list[float],
             size: float, lightning: float, color: list[int],
             constellation_name: str =None
@@ -23,7 +23,6 @@ class Star(BasicShape):
         self.size = size
         self.color = color
         self.lightning = lightning
-        self.init_data = base_data
         self.constellation_name = constellation_name
 
     def draw_shape(self):

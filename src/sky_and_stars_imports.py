@@ -6,8 +6,8 @@ import traceback
 from collections import deque, defaultdict
 import math
 import pickle
+import zipfile
 from pathlib import Path
-from PIL import Image
 
 ERROR_EXCEPTION = 1
 ERROR_WRONG_SETTINGS = 2
@@ -52,12 +52,14 @@ except Exception as e:
 
 try:
     import numpy as np
+    from PIL import Image
 except Exception as e:
-    print('numpy not found: "{}".'.format(e),
+    print('Not found: "{}".'.format(e),
           file=sys.stderr)
     sys.exit(ERROR_NUMPY_VERSION)
 
 try:
+    from src.star_parser import *
     from src.point_vector import PointVector
     from src.shape_opengl_drawers import *
     from src.basic_shapes import *

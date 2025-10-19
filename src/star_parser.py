@@ -14,7 +14,9 @@ def build_star_data(line_data: str):
         r"([+-]?\d+\.\d+)\s+",
         r"([A-Z0-9\.\+:\-\* ]+?)\s+",
         r"([+-]\d+\.\d+)\s+",
-        r"([+-]\d+\.\d+)"
+        r"([+-]\d+\.\d+)\s+",
+        r"([+-]\d+)\s+",
+        r"(\d+)"
     ])
     match = re.match(pattern, line_data.strip())
     if not match:
@@ -22,6 +24,7 @@ def build_star_data(line_data: str):
 
     try:
         star_data = {
+            "id": match.group(12),
             "longitude": match.group(2),
             "latitude": match.group(3),
             "galactic_lon": float(match.group(4)),

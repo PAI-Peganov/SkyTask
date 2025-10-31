@@ -1,94 +1,12 @@
 #!/usr/bin/env python3
 
 from src.sky_and_stars_imports import *
-from src.point_vector import PointVector
-from src.shape_opengl_drawers import draw_coordinate_sphere_by_position
+from src.gl_widget import GLWidget
+from src.scene_base import Scene
 from src.adding_windows import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from src.point_vector import PointVector
 from OpenGL.GLUT import *
 from tkinter import filedialog
-
-
-class GLWidget(QGLWidget):
-    def __init__(self, parent=None, scene=None):
-        super(GLWidget, self).__init__(parent)
-        self.scene = scene
-        self.camera_rotation_angle = 0
-        self.camera_lifting_angle = math.pi / 9
-        self.camera_fov_angle = 5
-        self.camera_position = PointVector(0, 0, 0)
-        self.frame_counter = 0
-        self.basis_render_size = 0.3
-
-    def initializeGL(self):
-        glEnable(GL_DEPTH_TEST)
-        glClearColor(0, 0, 0.05, 1.0)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [1.0, 1.0, 1.0, 1])
-        # Настройка источника света
-        # Направленный свет
-        # glLightfv(GL_LIGHT0, GL_POSITION, [-100.0, 100.0, 100.0, 0.0])
-        # Цвет рассеянного света
-        # glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
-        # Цвет зеркального отражения
-        # glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
-        # включение нормалей
-        glEnable(GL_NORMALIZE)
-        glEnable(GL_LINE_SMOOTH)
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        glPointSize(4.0)
-        glEnable(GL_POINT_SMOOTH)
-        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
-
-    def paintGL(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(70, self.width() / self.height(), 0.1, 100.0)
-        vector_view = self.get_view_vector()
-        gluLookAt(
-            self.camera_position.x,
-            self.camera_position.y,
-            self.camera_position.z,
-            self.camera_position.x + vector_view.x,
-            self.camera_position.y + vector_view.y,
-            self.camera_position.z + vector_view.z,
-            0, 0, 1
-        )
-        self.frame_counter += 1
-
-        draw_coordinate_sphere_by_position(self.camera_position)
-        for entity in self.scene.get_entities():
-            entity.draw_shape()
-
-        self.update()
-
-    def get_view_vector(self):
-        return PointVector(
-            math.cos(self.camera_rotation_angle) *
-            math.cos(self.camera_lifting_angle),
-            math.sin(self.camera_rotation_angle) *
-            math.cos(self.camera_lifting_angle),
-            math.sin(self.camera_lifting_angle),
-        )
-
-    def resizeGL(self, w, h):
-        glViewport(0, 0, w, h)
-
-    def save_to_png(self, filepath):
-        glPixelStorei(GL_PACK_ALIGNMENT, 1)
-        viewport = glGetIntegerv(GL_VIEWPORT)
-        buffer = glReadPixels(
-            0, 0, viewport[2], viewport[3], GL_RGB, GL_UNSIGNED_BYTE
-        )
-        image = Image.frombytes('RGB', (viewport[2], viewport[3]), buffer)
-        image = image.transpose(Image.FLIP_TOP_BOTTOM)
-        image.save(str(filepath), format='PNG')
-
-    def get_frame_count_since_startup(self):
-        return self.frame_counter
 
 
 class MainWindow(QMainWindow):
@@ -100,18 +18,6 @@ class MainWindow(QMainWindow):
         uic.loadUi("src/untitled.ui", self)
         self.setWindowTitle("Sky And Stars")
         self.OpenGLContainer.layout().addWidget(self.openGL_widget)
-
-        self.adding_page.layout().addWidget(
-            AddingOptionsWidget(
-                "", self.init_adding_params(), is_destroyable=False
-            )
-        )
-        self.entity_tree.setColumnCount(2)
-        self.entity_tree.setHeaderLabels(["Имя", "Тип"])
-        self.init_tree_interaction()
-        self.spinbox_zooming = QDoubleSpinBox()
-        self.init_scroll()
-        self.init_saving_field()
         self.init_scene()
 
     def init_tree_interaction(self):

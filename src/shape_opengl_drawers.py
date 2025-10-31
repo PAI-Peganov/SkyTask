@@ -60,9 +60,9 @@ def draw_segment(figure: Segment, color=SEGMENT_COLOR):
     glEnd()
 
 
-def draw_constellation(figure: Constellation):
+def draw_constellation(figure: Constellation, color=SEGMENT_COLOR):
     for el in figure.segments:
-        draw_segment(el)
+        draw_segment(el, color)
 
 
 def draw_coordinate_sphere_by_position(position: PointVector):

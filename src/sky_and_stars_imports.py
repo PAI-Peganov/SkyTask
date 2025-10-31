@@ -30,6 +30,8 @@ sys.excepthook = lambda x, y, z: (
 
 try:
     from PyQt5 import QtGui, QtCore, QtWidgets, QtOpenGL, uic
+    from PyQt5.QtGui import QCursor, QWheelEvent
+    from PyQt5.QtCore import QEvent, Qt, QPoint
     from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                                  QWidget, QDialog, QLabel, QLineEdit,
                                  QPushButton, QMessageBox, QFormLayout,
@@ -59,6 +61,7 @@ except Exception as e:
     sys.exit(ERROR_NUMPY_VERSION)
 
 try:
+    from src.mouse_controller import *
     from src.star_parser import *
     from src.point_vector import PointVector
     from src.shape_opengl_drawers import *

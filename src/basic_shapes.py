@@ -12,18 +12,22 @@ class BasicShape:
         
 class Star(BasicShape):
     def __init__(
-            self, name: str,
+            self, name: str, hd_number: int,
             position: PointVector, move: list[float],
             size: float, lightning: float, color: list[int],
-            constellation_name: str =None
+            constellation_name: str = None
     ):
         super().__init__(name)
+        self.hd_number = hd_number
         self.position = position
         self.move = move
         self.size = size
         self.color = color
         self.lightning = lightning
         self.constellation_name = constellation_name
+
+    def get_position_numpy(self):
+        return self.position.np_vector
 
     def draw_shape(self):
         draw_point_param(self.position, self.size, self.color)
@@ -44,6 +48,20 @@ class Constellation(BasicShape):
         super().__init__(name)
         self.stars = list(stars)
         self.segments = list(segments)
+        self.color_active = []
+        self.color_inactive = []
+        self.is_picked = False
+
+    def contains(self, star: Star) -> bool:
+        for s in self.stars:
+            if s.hd_number == star.hd_number:
+                return True
+        return False
+
+    def _get_color(self):
+        if self.is_picked:
+            return self.color_active
+        return self.color_inactive
 
     def draw_shape(self):
-        draw_constellation(self)
+        draw_constellation(self, self._get_color())

@@ -8,7 +8,8 @@ import numpy as np
 
 
 def set_material(
-    color, shininess=100.0, ambient=0.2, diffuse=0.9, specular=0.001
+    color: list[float], shininess: float = 100.0, ambient: float = 0.2,
+    diffuse: float = 0.9, specular: float = 0.001
 ):
     color = np.array(color)
     ambient_val = color * ambient
@@ -33,9 +34,9 @@ def out_light(func):
     return result
 
 
-def draw_sphere_param(point: PointVector, radius: float, color: list[int]):
+def draw_sphere_param(point: PointVector, radius: float, color: list[float]):
     #glPushMatrix()
-    glTranslate(point[0], point[1], point[2])
+    glTranslate(point.x, point.y, point.z)
     set_material(color)
     quadric = gluNewQuadric()
     gluSphere(quadric, radius, 8, 8)
@@ -44,7 +45,7 @@ def draw_sphere_param(point: PointVector, radius: float, color: list[int]):
     #glPopMatrix()
 
 
-def draw_point_param(point: PointVector, radius: float, color: list[int]):
+def draw_point_param(point: PointVector, radius: float, color: list[float]):
     glBegin(GL_POINTS)
     glPointSize(radius)
     glColor3fv(color)
@@ -52,7 +53,7 @@ def draw_point_param(point: PointVector, radius: float, color: list[int]):
     glEnd()
 
 
-def draw_segment(figure: Segment, color=SEGMENT_COLOR):
+def draw_segment(figure: Segment, color: list[float] = SEGMENT_COLOR):
     glBegin(GL_LINES)
     glColor3fv(color[:3])
     glVertex3fv(figure.point_a.np_vector)
@@ -69,7 +70,7 @@ def draw_coordinate_sphere_by_position(position: PointVector):
     glTranslatef(position.x, position.y, position.z)
     glLineWidth(1.0)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-    glutWireSphere(5.0, 24, 18)
+    glutWireSphere(5.0, 24, 18)  # случайный радиус, 24 часа, 180 градусов / 10
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     glTranslatef(0.0, 0.0, 0.0)
 

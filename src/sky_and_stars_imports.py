@@ -5,8 +5,8 @@ import os
 import traceback
 from collections import deque, defaultdict
 import math
-import pickle
 import zipfile
+import datetime
 from pathlib import Path
 
 ERROR_EXCEPTION = 1
@@ -63,7 +63,7 @@ except Exception as e:
 try:
     from src.mouse_controller import *
     from src.star_parser import *
-    from src.point_vector import PointVector
+    from src.point_vector import *
     from src.shape_opengl_drawers import *
     from src.basic_shapes import *
     from src.scene_base import *

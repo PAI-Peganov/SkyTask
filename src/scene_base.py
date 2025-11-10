@@ -30,7 +30,7 @@ class EntityNameAlreadyExistsException(Exception):
 
 
 class Scene:
-    def __init__(self, app_update: callable):
+    def __init__(self, app_update: callable = (lambda x: x)):
         self.app_update = app_update
         self._scene_time = None
         self._stars = []
@@ -46,18 +46,17 @@ class Scene:
     def add_stars_from_zip(self, path: Path):
         data_stars = parse_star_data_from_zip(path)
         for star_data in data_stars:
-            lon = star_data["galactic_lon"] * math.pi / 180
-            lat = star_data["galactic_lat"] * math.pi / 180
-            dist = 40
-            position = PointVector(
-                dist * math.cos(lon) * math.cos(lat),
-                dist * math.sin(lon) * math.cos(lat),
-                dist * math.sin(lat)
-            )
             new_star = Star(
                 name=star_data["name"],
                 hd_number=star_data["id"],
-                position=position,
+                longitude=star_data["galactic_lon"],
+                latitude=star_data["galactic_lat"],
+                init_date=datetime.date(2025, 11, 7),
+                move_longitude_seconds=star_data["move_longitude"],
+                move_latitude_seconds=star_data["move_latitude"],
+                spectral_class=star_data["spectral_class"],
+                reference=star_data,
+                constellation_name="",
             )
             self._stars.append(new_star)
 

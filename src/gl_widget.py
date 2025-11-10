@@ -8,9 +8,9 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         super(MouseControllerWidget, self).__init__(parent)
         super(GLWidget, self).__init__(parent)
         self.scene = scene
-        self.camera_rotation_angle = 0.0 # радианы
-        self.camera_lifting_angle = 0.0 # радианы
-        self.camera_fov_angle = 60 # градусы
+        self.camera_rotation_angle = 0.0  # радианы
+        self.camera_lifting_angle = 0.0  # радианы
+        self.camera_fov_angle = 60  # градусы
         self.camera_fov_angle_min = 5
         self.camera_fov_angle_max = 150
         self.camera_position = PointVector(0, 0, 0)
@@ -18,7 +18,7 @@ class GLWidget(QGLWidget, MouseControllerWidget):
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
-        glClearColor(0, 0, 0.05, 1.0)
+        glClearColor(0.05, 0, 0.1, 1.0)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [1.0, 1.0, 1.0, 1])
@@ -79,7 +79,6 @@ class GLWidget(QGLWidget, MouseControllerWidget):
                 self.camera_lifting_angle + m_move.y() * math.pi / 180, math.pi
             )
         )
-        QCursor.setPos(self._mouse_init_point)
 
     def get_camera_fov(self):
         self.contact_camera_fov()
@@ -102,8 +101,17 @@ class GLWidget(QGLWidget, MouseControllerWidget):
     def left_click_process(self, qpoint: QPoint):
         if qpoint is None:
             return
-        if glReadPixels(qpoint.x(), qpoint.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE) ==
+        if sum(glReadPixels(
+                qpoint.x(),
+                self.height() - 1 - qpoint.y(),
+                1, 1, GL_RGB, GL_UNSIGNED_BYTE
+        )[0]) > 1.5:
+            self.scene.get_star_and_constellation_nearest_to(
+                self.get_screen_click_direction_by(qpoint)
+            )
 
+    def get_screen_click_direction_by(self, qpoint: QPoint) -> PointVector:
+        return PointVector(0, 0, 0)
 
     def resizeGL(self, w, h):
         glViewport(0, 0, w, h)

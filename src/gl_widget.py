@@ -1,3 +1,8 @@
+import datetime
+import math
+
+import numpy as np
+
 from sky_and_stars_imports import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -8,20 +13,20 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         super(MouseControllerWidget, self).__init__(parent)
         super(GLWidget, self).__init__(parent)
         self.scene = scene
+        self.scene.add_stars_from_zip(Path("src/stars.zip"))
         self.camera_rotation_angle = 0.0  # радианы
         self.camera_lifting_angle = 0.0  # радианы
-        self.camera_fov_angle = 60  # градусы
+        self.camera_fov_angle = 100.0  # градусы
         self.camera_fov_angle_min = 5
-        self.camera_fov_angle_max = 150
-        self.camera_position = PointVector(0, 0, 0)
+        self.camera_fov_angle_max = 120
         self.frame_counter = 0
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
+        # glEnable(GL_LIGHTING)
+        # glEnable(GL_LIGHT0)
         glClearColor(0.05, 0, 0.1, 1.0)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [1.0, 1.0, 1.0, 1])
+        # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [1.0, 1.0, 1.0, 1.0])
         # Настройка источника света
         # Направленный свет
         # glLightfv(GL_LIGHT0, GL_POSITION, [-100.0, 100.0, 100.0, 0.0])
@@ -33,7 +38,6 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         glEnable(GL_NORMALIZE)
         glEnable(GL_LINE_SMOOTH)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        glPointSize(4.0)
         glEnable(GL_POINT_SMOOTH)
         glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
 
@@ -46,17 +50,15 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         )
         vector_view = self.get_view_vector()
         gluLookAt(
-            self.camera_position.x,
-            self.camera_position.y,
-            self.camera_position.z,
-            self.camera_position.x + vector_view.x,
-            self.camera_position.y + vector_view.y,
-            self.camera_position.z + vector_view.z,
+            0, 0, 0,
+            vector_view.x, vector_view.y, vector_view.z,
             0, 0, 1
         )
+        glMatrixMode(GL_MODELVIEW)
         self.frame_counter += 1
 
-        draw_coordinate_sphere_by_position(self.camera_position)
+        self.scene.set_year(self.frame_counter * 10000)
+        draw_coordinate_sphere_by_position()
         for entity in self.scene.get_entities():
             entity.draw_shape()
 
@@ -64,25 +66,30 @@ class GLWidget(QGLWidget, MouseControllerWidget):
 
     def contact_camera_fov(self):
         self.camera_fov_angle = max(
-            self.camera_fov_angle_min, max(
-                self.camera_fov_angle - self.get_wheel_rotation() // 8,
+            self.camera_fov_angle_min,
+            min(
+                self.camera_fov_angle - self.get_wheel_rotation() / 120,
                 self.camera_fov_angle_max
             )
         )
 
     def contact_camera_direction(self) -> None:
-        m_move = self.get_mouse_move()
+        m_move = -self.get_mouse_move() * (
+                self.get_camera_fov() / self.camera_fov_angle_max
+        )
         self.camera_rotation_angle += m_move.x() * math.pi / 180
         self.camera_rotation_angle %= 2 * math.pi
         self.camera_lifting_angle = max(
-            -math.pi, min(
-                self.camera_lifting_angle + m_move.y() * math.pi / 180, math.pi
+            -math.pi / 2.00001,
+            min(
+                self.camera_lifting_angle + m_move.y() * math.pi / 180,
+                math.pi / 2.00001
             )
         )
 
     def get_camera_fov(self):
         self.contact_camera_fov()
-        return self.camera_fov_angle
+        return int(self.camera_fov_angle)
 
     def get_view_vector(self):
         self.contact_camera_direction()
@@ -92,26 +99,43 @@ class GLWidget(QGLWidget, MouseControllerWidget):
     def view_vector(self):
         return PointVector(
             math.cos(self.camera_rotation_angle) *
-            math.cos(self.camera_lifting_angle),
+            math.cos(self.camera_lifting_angle) * 100,
             math.sin(self.camera_rotation_angle) *
-            math.cos(self.camera_lifting_angle),
-            math.sin(self.camera_lifting_angle)
+            math.cos(self.camera_lifting_angle) * 100,
+            math.sin(self.camera_lifting_angle) * 100,
         )
 
-    def left_click_process(self, qpoint: QPoint):
+    def overrideable_left_click_process(self, qpoint: QPoint):
         if qpoint is None:
             return
-        if sum(glReadPixels(
-                qpoint.x(),
-                self.height() - 1 - qpoint.y(),
-                1, 1, GL_RGB, GL_UNSIGNED_BYTE
-        )[0]) > 1.5:
-            self.scene.get_star_and_constellation_nearest_to(
-                self.get_screen_click_direction_by(qpoint)
-            )
+        pixel_colors = sum(map(int, glReadPixels(
+            qpoint.x(),
+            self.height() - 1 - qpoint.y(),
+            1, 1, GL_RGB, GL_UNSIGNED_BYTE
+        )))
+        if pixel_colors > 75:
+            print(self.scene.get_star_and_constellation_nearest_to(
+                self.get_vector_direction_by_click(qpoint)
+            ).reference)
 
-    def get_screen_click_direction_by(self, qpoint: QPoint) -> PointVector:
-        return PointVector(0, 0, 0)
+    def get_vector_direction_by_click(self, qpoint: QPoint) -> PointVector:
+        gl_mv = glGetDoublev(GL_MODELVIEW_MATRIX)
+        gl_proj = glGetDoublev(GL_PROJECTION_MATRIX)
+        gl_vp = glGetIntegerv(GL_VIEWPORT)
+        w_x = qpoint.x()
+        w_y = self.height() - qpoint.y() - 1
+        near_point = gluUnProject(w_x, w_y, 0.0, gl_mv, gl_proj, gl_vp)
+        far_point = gluUnProject(w_x, w_y, 1.0, gl_mv, gl_proj, gl_vp)
+        pv = PointVector(
+            far_point[0] - near_point[0],
+            far_point[1] - near_point[1],
+            far_point[2] - near_point[2]
+        )
+        v = pv.np_vector
+        v /= np.linalg.norm(v)
+        # print(self.camera_rotation_angle * 180 / math.pi, self.camera_lifting_angle * 180 / math.pi)
+        # print(math.copysign(math.acos(v[0] / ((1 - v[2] ** 2) ** 0.5)), math.asin(v[1] / ((1 - v[2] ** 2) ** 0.5))) * 180 / math.pi % 360, math.asin(v[2]) * 180 / math.pi)
+        return pv
 
     def resizeGL(self, w, h):
         glViewport(0, 0, w, h)

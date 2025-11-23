@@ -28,25 +28,28 @@ class MouseControllerWidget(QWidget):
                 return m_pos
         return None
 
-    def left_click_process(self, qpoint: QPoint):
+    def overrideable_left_click_process(self, qpoint: QPoint):
         pass
 
     def mousePressEvent(self, event):
-        if event == Qt.MouseButton.RightButton:
+        if (
+            event.button() == Qt.MouseButton.RightButton and
+            self._mouse_init_point is None
+        ):
             self._mouse_init_point = self.try_get_mouse_position_inside()
-        if event == Qt.MouseButton.LeftButton:
-            self.left_click_process(
+        elif event.button() == Qt.MouseButton.LeftButton:
+            self.overrideable_left_click_process(
                 self.try_get_mouse_position_inside()
             )
 
     def mouseMoveEvent(self, event):
-        if self._mouse_init_point:
+        if self._mouse_init_point is not None:
             self._mouse_move = event.pos() - self._mouse_init_point
-            QCursor.setPos(self._mouse_init_point)
+            self.cursor().setPos(self.mapToGlobal(self._mouse_init_point))
 
     def mouseReleaseEvent(self, event):
-        if event == Qt.MouseButton.RightButton:
+        if event.button() == Qt.MouseButton.RightButton:
             self._mouse_init_point = None
 
     def wheelEvent(self, event):
-        self._wheel_rotation = event.pixelDelta().y()
+        self._wheel_rotation = event.angleDelta().y()

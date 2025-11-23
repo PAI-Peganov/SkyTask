@@ -6,34 +6,34 @@ import re
 def build_star_data(line_data: str):
     pattern = "".join([
         r"^\s*(\d+)\s+",
-        r"(\d+:\d+:\d+\.?\d*)\s+",
-        r"([+-]\d+:\d+:\d+)\s+",
+        r"(\d+:\s*\d+:\s*\d+\.?\d*)\s+",
+        r"([+-]\s*\d+:\s*\d+:\s*\d+)\s+",
         r"([+-]?\d+\.\d+)\s+",
         r"([+-]?\d+\.\d+)\s+",
-        r"([VWASD ]*)\s*",
+        r"[IVWASD]*\s+",
         r"([+-]?\d+\.\d+)\s+",
-        r"([A-Z0-9\.\+:\-\* ]+?)\s+",
-        r"([+-]\d+\.\d+)\s+",
-        r"([+-]\d+\.\d+)\s+",
+        r"([A-Za-z0-9\.\+:/\-\*\?,\(\) ]+?)\s+",
+        r"([+-]?\d+\.\d+)\s+",
+        r"([+-]?\d+\.\d+)\s+",
+        r"D*\s*\d*\s*",
         r"([+-]\d+)\s+",
         r"(\d+)"
     ])
     match = re.match(pattern, line_data.strip())
     if not match:
+        print("---", line_data)
         return None
-
     try:
         star_data = {
-            "id": match.group(12),
-            "longitude": match.group(2),
-            "latitude": match.group(3),
-            "galactic_lon": float(match.group(4)),
-            "galactic_lat": float(match.group(5)),
-            "flags": match.group(6).strip(),
-            "magnitude": float(match.group(7)),
-            "spectral_class": match.group(8).strip(),
-            "move_longitude": float(match.group(9)),
-            "move_latitude": float(match.group(10))
+            "id": match.group(11),
+            "longitude": match.group(2).replace(" ", ""),
+            "latitude": match.group(3).replace(" ", ""),
+            "galactic_lon": float(match.group(4).replace(" ", "")),  # Долгота
+            "galactic_lat": float(match.group(5).replace(" ", "")),  # Широта
+            "magnitude": float(match.group(6).replace(" ", "")),
+            "spectral_class": match.group(7).strip(),
+            "move_longitude": float(match.group(8).replace(" ", "")),
+            "move_latitude": float(match.group(9).replace(" ", ""))
         }
 
         remaining = line_data[match.end():].replace("( ", "(").strip().split()

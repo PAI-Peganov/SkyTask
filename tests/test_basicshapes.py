@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 class TestBasicShape(unittest.TestCase):
     def setUp(self):
-        self.shape = BasicShape("test_shape")
+        self.shape = BasicEntity("test_shape")
 
     def test_initialization(self):
         self.assertEqual(self.shape.name, "test_shape")

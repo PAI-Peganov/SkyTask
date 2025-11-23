@@ -8,6 +8,8 @@ import math
 import zipfile
 import datetime
 from pathlib import Path
+import logging
+logger = logging.getLogger(__name__)
 
 ERROR_EXCEPTION = 1
 ERROR_WRONG_SETTINGS = 2
@@ -65,7 +67,7 @@ try:
     from src.star_parser import *
     from src.point_vector import *
     from src.shape_opengl_drawers import *
-    from src.basic_shapes import *
+    from src.base_entities import *
     from src.scene_base import *
     from src.adding_windows import *
     from src.qt_app import *

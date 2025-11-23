@@ -1,5 +1,5 @@
 from src.sky_and_stars_imports import SEGMENT_COLOR
-from src.basic_shapes import *
+from src.base_entities import *
 from src.point_vector import PointVector
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -34,22 +34,11 @@ def out_light(func):
     return result
 
 
-def draw_sphere_param(point: PointVector, radius: float, color: list[float]):
-    #glPushMatrix()
-    glTranslate(point.x, point.y, point.z)
-    set_material(color)
-    quadric = gluNewQuadric()
-    gluSphere(quadric, radius, 8, 8)
-    gluDeleteQuadric(quadric)
-    glTranslate(0, 0, 0)
-    #glPopMatrix()
-
-
-def draw_point_param(point: PointVector, radius: float, color: list[float]):
-    glBegin(GL_POINTS)
+def draw_point_param(point: np.array, radius: float, color: list[float]):
     glPointSize(radius)
-    glColor3fv(color)
-    glVertex3f(point.x, point.y, point.z)
+    glColor3fv(color[:3])
+    glBegin(GL_POINTS)
+    glVertex3f(*point)
     glEnd()
 
 
@@ -66,13 +55,15 @@ def draw_constellation(figure: Constellation, color=SEGMENT_COLOR):
         draw_segment(el, color)
 
 
-def draw_coordinate_sphere_by_position(position: PointVector):
-    glTranslatef(position.x, position.y, position.z)
-    glLineWidth(1.0)
+def draw_coordinate_sphere_by_position():
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-    glutWireSphere(5.0, 24, 18)  # случайный радиус, 24 часа, 180 градусов / 10
+    glColor3f(0.1, 0.1, 0.1)
+    glLineWidth(0.1)
+    quadric = gluNewQuadric()
+    # gluSphere(quadric, 55.0, 24, 18)  # случайный радиус, 24 часа, 180 градусов / 10
+    gluSphere(quadric, 55.0, 36, 18)  # случайный радиус, 24 часа, 180 градусов / 10
+    gluDeleteQuadric(quadric)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-    glTranslatef(0.0, 0.0, 0.0)
 
 
 def draw_light(figure):

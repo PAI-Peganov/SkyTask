@@ -5,7 +5,7 @@ import datetime
 import math
 
 
-class BasicShape:
+class BasicEntity:
     def __init__(self, name: str):
         self.name = name
 
@@ -13,14 +13,14 @@ class BasicShape:
         pass
 
         
-class Star(BasicShape):
+class Star(BasicEntity):
     def __init__(
             self,
             name: str,
             hd_number: int,
             longitude: float,
             latitude: float,
-            init_date: datetime.date,
+            init_year: int,
             move_longitude_seconds: float,
             move_latitude_seconds: float,
             spectral_class: str,
@@ -29,9 +29,9 @@ class Star(BasicShape):
     ):
         super().__init__(name)
         self.hd_number = hd_number
-        self.longitude = longitude
-        self.latitude = latitude
-        self.init_date = init_date
+        self.longitude = longitude  # Долгота
+        self.latitude = latitude  # Широта
+        self.init_year = init_year
         self.move_longitude = move_longitude_seconds / 3600
         self.move_latitude = move_latitude_seconds / 3600
         self._size_d = 7
@@ -41,7 +41,7 @@ class Star(BasicShape):
         self.reference = reference
         self.constellation_name = constellation_name
         self.position = None
-        self.set_time_span(init_date)
+        self.set_time_span(init_year)
 
     def _set_size_and_color_by(self, spectral_class: str) -> None:
         temp_class_letter = spectral_class[0]
@@ -66,19 +66,11 @@ class Star(BasicShape):
         elif "I" in spectral_class:
             self.size = self._size_d - 1
         else:
-            raise ValueError("Unmatched star spectral class")
+            self.size = 0
+            print(f"Unmatched star spectral class: {spectral_class}")
 
-    def _get_size_by(self, lightning_class: str) -> float:
-        match lightning_class:
-            case "I": return self._size_d - 1
-            case "II": return self._size_d - 2
-            case "III": return self._size_d - 3
-            case "IV": return self._size_d - 4
-            case "V": return self._size_d - 5
-        return self._size_d - 6
-
-    def set_time_span(self, date: datetime.date) -> None:
-        delta_years = (date - self.init_date).days / 365.25
+    def set_time_span(self, year: int) -> None:
+        delta_years = year - self.init_year
         lon = (
             self.longitude + delta_years * self.move_longitude
         ) * math.pi / 180
@@ -87,8 +79,8 @@ class Star(BasicShape):
         ) * math.pi / 180
         dist = 40
         self.position = PointVector(
-            dist * math.cos(lon) * math.cos(lat),
-            dist * math.sin(lon) * math.cos(lat),
+            dist * math.cos(lat) * math.cos(lon),
+            dist * math.cos(lat) * math.sin(lon),
             dist * math.sin(lat),
         )
 
@@ -96,10 +88,14 @@ class Star(BasicShape):
         return self.position.np_vector
 
     def draw_shape(self) -> None:
-        draw_point_param(self.position, self.size, self.color)
+        if self.size <= 0:
+            return None
+        pos = self.get_position_numpy()
+        draw_point_param(pos, self.size, self.color)
+        draw_point_param(pos * 0.99, self.size * 0.5, [1.0, 1.0, 1.0, 1.0])
 
 
-class Segment(BasicShape):
+class Segment(BasicEntity):
     def __init__(self, name: str, a: PointVector, b: PointVector):
         super().__init__(name)
         self.point_a = a
@@ -109,7 +105,7 @@ class Segment(BasicShape):
         draw_segment(self)
 
 
-class Constellation(BasicShape):
+class Constellation(BasicEntity):
     def __init__(self, name: str, stars: list[Star], segments: list[Segment]):
         super().__init__(name)
         self.stars = list(stars)

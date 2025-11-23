@@ -33,12 +33,14 @@ And other
 To add contur you need plane to add it to this plane to border it
 Of course you can rotate and zoom scene by scroll bars
 """
+import logging
 import sys
 import subprocess
 
 
 def main():
     args = sys.argv[1:]
+    logging.basicConfig(level=logging.INFO)
 
     if "--help" in args:
         print(__doc__)

@@ -1,7 +1,6 @@
 from src.shape_opengl_drawers import *
 from src.point_vector import PointVector
 import numpy as np
-import datetime
 import math
 
 
@@ -88,11 +87,12 @@ class Star(BasicEntity):
         return self.position.np_vector
 
     def draw_shape(self) -> None:
-        if self.size <= 0:
-            return None
-        pos = self.get_position_numpy()
-        draw_point_param(pos, self.size, self.color)
-        draw_point_param(pos * 0.99, self.size * 0.5, [1.0, 1.0, 1.0, 1.0])
+        if self.size > 0:
+            pos = self.get_position_numpy()
+            draw_point_param(pos, self.size, self.color)
+            draw_point_param(
+                pos * 0.99, self.size * 0.5, [1.0, 1.0, 1.0, 1.0]
+            )
 
 
 class Segment(BasicEntity):

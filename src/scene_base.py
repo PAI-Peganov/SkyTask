@@ -2,7 +2,6 @@ from src.sky_and_stars_imports import *
 from base_entities import *
 from star_parser import parse_star_data_from_zip
 import numpy as np
-import math
 
 
 class EntityNotFoundException(Exception):

@@ -1,11 +1,8 @@
-import datetime
-import math
-
-import numpy as np
-
 from sky_and_stars_imports import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+import math
+import numpy as np
 
 
 class GLWidget(QGLWidget, MouseControllerWidget):

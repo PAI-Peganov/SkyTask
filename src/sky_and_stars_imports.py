@@ -8,6 +8,9 @@ import math
 import zipfile
 import datetime
 from pathlib import Path
+from astroquery.simbad import Simbad
+from astropy import coordinates
+from astropy import units
 import logging
 logger = logging.getLogger(__name__)
 

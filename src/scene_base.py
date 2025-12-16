@@ -34,6 +34,7 @@ class Scene:
         self._scene_time = None
         self._stars = []
         self._constellations = []
+        self._active_star = None
         self._active_constellation = None
 
     def get_entities(self):
@@ -42,7 +43,7 @@ class Scene:
         for c in self._constellations:
             yield c
 
-    def add_stars_from_zip(self, path: Path):
+    def _add_stars_from_zip(self, path: Path):
         data_stars = parse_star_data_from_zip(path)
         for star_data in data_stars:
             new_star = Star(
@@ -60,18 +61,45 @@ class Scene:
             self._stars.append(new_star)
         print(len(self._stars))
 
+    def _add_constellations_from_json(self, path: Path):
+        data_constellations = parse_constellation_data_from_json(path)
+        for data_con in data_constellations:
+            star_polylines = []
+            for data_poly in data_con["lines"]:
+                star_poly = []
+                for star_hd in data_poly:
+                    if star_hd is None:
+                        continue
+                    found = [x for x in self._stars if x.hd_number == star_hd]
+                    if len(found) > 0:
+                        star_poly.append(found[0])
+                        found[0].constellation_name = data_con["name"]
+                star_polylines.append(star_poly)
+            self._constellations.append(
+                Constellation(
+                    name=data_con["name"],
+                    star_polylines=star_polylines
+                )
+            )
+
+    def add_stars_and_constellations_from_files(
+            self, path_stars: Path, path_con: Path
+    ):
+        self._add_stars_from_zip(path_stars)
+        self._add_constellations_from_json(path_con)
+
     def set_year(self, year: float):
         for star in self._stars:
             star.set_time_span(int(year))
 
-    def get_star_and_constellation_nearest_to(self, ray: PointVector):
+    def set_active_star_and_constellation_nearest_to(self, ray: PointVector):
         star = self._get_star_nearest_to(ray)
         if star is None:
             return None
         self._try_set_active_constellation_pick(False)
         self._active_constellation = self._get_constellation_by(star)
         self._try_set_active_constellation_pick(True)
-        return star
+        return star, self._active_constellation
 
     def _try_set_active_constellation_pick(self, is_picked: bool) -> bool:
         if self._active_constellation is not None:
@@ -83,17 +111,20 @@ class Scene:
         np_ray = ray.np_vector
         np_ray /= np.linalg.norm(np_ray)
         nearest_star = max(map(
-            lambda s: (np.dot(np_ray, s.get_position_numpy()), s),
+            lambda s: (
+                np.dot(np_ray, s.get_position_numpy()) / np.linalg.norm(
+                    s.get_position_numpy()
+                ),
+                s
+            ),
             self._stars
         ))
-        if nearest_star[0] > 0.5 * np.linalg.norm(
-            nearest_star[1].get_position_numpy()
-        ):
+        if nearest_star[0] > 0.95:
             return nearest_star[1]
         return None
 
     def _get_constellation_by(self, star: Star):
-        for ent in self._constellations:
-            if ent is Constellation and ent.name == star.constellation_name:
-                return ent
+        for con in self._constellations:
+            if con.name == star.constellation_name:
+                return con
         return None

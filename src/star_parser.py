@@ -1,6 +1,7 @@
 from pathlib import Path
 import zipfile
 import re
+import json
 
 
 def build_star_data(line_data: str):
@@ -79,3 +80,9 @@ def parse_star_data_from_zip(path: Path) -> list[dict]:
                     if new_star is not None:
                         stars.append(new_star)
     return stars
+
+
+def parse_constellation_data_from_json(path: Path) -> list[dict]:
+    with open(path, "r", encoding="utf-8") as file:
+        constellations = json.load(file)
+    return constellations.values()

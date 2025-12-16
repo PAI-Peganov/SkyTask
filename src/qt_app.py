@@ -14,7 +14,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         # self.scene = Scene(self.scene_update)
         self.scene = Scene()
-
+        self.scene.add_stars_and_constellations_from_files(
+            Path("src/stars.zip"), Path("src/constellations_dictionary.json")
+        )
         self.openGL_widget = GLWidget(scene=self.scene)
         uic.loadUi("src/untitled.ui", self)
         self.setWindowTitle("Sky And Stars")

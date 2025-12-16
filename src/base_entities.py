@@ -16,7 +16,7 @@ class Star(BasicEntity):
     def __init__(
             self,
             name: str,
-            hd_number: int,
+            hd_number: str,
             longitude: float,
             latitude: float,
             init_year: int,
@@ -94,6 +94,15 @@ class Star(BasicEntity):
                 pos * 0.99, self.size * 0.5, [1.0, 1.0, 1.0, 1.0]
             )
 
+    def __eq__(self, other):
+        return self.hd_number == other.hd_number
+
+    def __gt__(self, other):
+        return self.constellation_name is not None
+
+    def __hash__(self):
+        return self.hd_number.__hash__()
+
 
 class Segment(BasicEntity):
     def __init__(self, name: str, a: PointVector, b: PointVector):
@@ -106,12 +115,12 @@ class Segment(BasicEntity):
 
 
 class Constellation(BasicEntity):
-    def __init__(self, name: str, stars: list[Star], segments: list[Segment]):
+    def __init__(self, name: str, star_polylines: list[list[Star]]):
         super().__init__(name)
-        self.stars = list(stars)
-        self.segments = list(segments)
-        self.color_active = []
-        self.color_inactive = []
+        self.star_polylines = star_polylines
+        self.stars = set(star for poly in star_polylines for star in poly)
+        self.color_active = [0.3, 0.3, 0.3, 1.0]
+        self.color_inactive = [0.2, 0.2, 0.2, 1.0]
         self.is_picked = False
 
     def contains(self, star: Star) -> bool:
@@ -125,5 +134,9 @@ class Constellation(BasicEntity):
             return self.color_active
         return self.color_inactive
 
+    def set_picked(self, picked: bool):
+        self.is_picked = picked
+
     def draw_shape(self):
-        draw_constellation(self, self._get_color())
+        for polyline in self.star_polylines:
+            draw_polyline(polyline, self._get_color())

@@ -10,7 +10,6 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         super(MouseControllerWidget, self).__init__(parent)
         super(GLWidget, self).__init__(parent)
         self.scene = scene
-        self.scene.add_stars_from_zip(Path("src/stars.zip"))
         self.camera_rotation_angle = 0.0  # радианы
         self.camera_lifting_angle = 0.0  # радианы
         self.camera_fov_angle = 100.0  # градусы
@@ -54,7 +53,7 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         glMatrixMode(GL_MODELVIEW)
         self.frame_counter += 1
 
-        self.scene.set_year(self.frame_counter * 10000)
+        self.scene.set_year(self.frame_counter * 1)
         draw_coordinate_sphere_by_position()
         for entity in self.scene.get_entities():
             entity.draw_shape()
@@ -111,9 +110,12 @@ class GLWidget(QGLWidget, MouseControllerWidget):
             1, 1, GL_RGB, GL_UNSIGNED_BYTE
         )))
         if pixel_colors > 75:
-            print(self.scene.get_star_and_constellation_nearest_to(
+            s, c = self.scene.set_active_star_and_constellation_nearest_to(
                 self.get_vector_direction_by_click(qpoint)
-            ).reference)
+            )
+            print(s.reference)
+            print(s.constellation_name)
+            print(c)
 
     def get_vector_direction_by_click(self, qpoint: QPoint) -> PointVector:
         gl_mv = glGetDoublev(GL_MODELVIEW_MATRIX)

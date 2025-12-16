@@ -4,3 +4,5 @@ numpy
 pytest
 pytest-cov
 Pillow
+astroquery
+astropy

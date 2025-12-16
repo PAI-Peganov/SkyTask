@@ -50,9 +50,13 @@ def draw_segment(figure: Segment, color: list[float] = SEGMENT_COLOR):
     glEnd()
 
 
-def draw_constellation(figure: Constellation, color=SEGMENT_COLOR):
-    for el in figure.segments:
-        draw_segment(el, color)
+def draw_polyline(star_points: list[Star], color: list[float] = SEGMENT_COLOR):
+    glLineWidth(2)
+    glBegin(GL_LINES)
+    glColor3fv(color[:3])
+    for el in star_points:
+        glVertex3fv(el.get_position_numpy())
+    glEnd()
 
 
 def draw_coordinate_sphere_by_position():
@@ -60,8 +64,7 @@ def draw_coordinate_sphere_by_position():
     glColor3f(0.1, 0.1, 0.1)
     glLineWidth(0.1)
     quadric = gluNewQuadric()
-    # gluSphere(quadric, 55.0, 24, 18)  # случайный радиус, 24 часа, 180 градусов / 10
-    gluSphere(quadric, 55.0, 36, 18)  # случайный радиус, 24 часа, 180 градусов / 10
+    gluSphere(quadric, 55.0, 24, 18)  # случайный радиус, 24 часа, 180 градусов / 10
     gluDeleteQuadric(quadric)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 

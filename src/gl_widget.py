@@ -10,6 +10,7 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         super(MouseControllerWidget, self).__init__(parent)
         super(GLWidget, self).__init__(parent)
         self.scene = scene
+        self.parent = parent
         self.camera_rotation_angle = 0.0  # радианы
         self.camera_lifting_angle = 0.0  # радианы
         self.camera_fov_angle = 100.0  # градусы
@@ -53,7 +54,6 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         glMatrixMode(GL_MODELVIEW)
         self.frame_counter += 1
 
-        self.scene.set_year(self.frame_counter * 1)
         draw_coordinate_sphere_by_position()
         for entity in self.scene.get_entities():
             entity.draw_shape()
@@ -68,6 +68,7 @@ class GLWidget(QGLWidget, MouseControllerWidget):
                 self.camera_fov_angle_max
             )
         )
+        self.parent.double_set_view_fov.setValue(self.camera_fov_angle)
 
     def contact_camera_direction(self) -> None:
         m_move = -self.get_mouse_move() * (
@@ -81,6 +82,12 @@ class GLWidget(QGLWidget, MouseControllerWidget):
                 self.camera_lifting_angle + m_move.y() * math.pi / 180,
                 math.pi / 2.00001
             )
+        )
+        self.parent.double_set_view_latitude.setValue(
+            self.camera_lifting_angle * 180 / math.pi
+        )
+        self.parent.double_set_view_longitude.setValue(
+            self.camera_rotation_angle * 180 / math.pi
         )
 
     def get_camera_fov(self):
@@ -113,9 +120,14 @@ class GLWidget(QGLWidget, MouseControllerWidget):
             s, c = self.scene.set_active_star_and_constellation_nearest_to(
                 self.get_vector_direction_by_click(qpoint)
             )
-            print(s.reference)
-            print(s.constellation_name)
-            print(c)
+            self.parent.star_info_page.setPlainText(
+                "\n".join(map(
+                    lambda t: f"{t[0]}: {t[1]}",
+                    list(s.reference.items()) + [
+                        ("constellation", c.name if c else "None")
+                    ]
+                ))
+            )
 
     def get_vector_direction_by_click(self, qpoint: QPoint) -> PointVector:
         gl_mv = glGetDoublev(GL_MODELVIEW_MATRIX)
@@ -132,8 +144,6 @@ class GLWidget(QGLWidget, MouseControllerWidget):
         )
         v = pv.np_vector
         v /= np.linalg.norm(v)
-        # print(self.camera_rotation_angle * 180 / math.pi, self.camera_lifting_angle * 180 / math.pi)
-        # print(math.copysign(math.acos(v[0] / ((1 - v[2] ** 2) ** 0.5)), math.asin(v[1] / ((1 - v[2] ** 2) ** 0.5))) * 180 / math.pi % 360, math.asin(v[2]) * 180 / math.pi)
         return pv
 
     def resizeGL(self, w, h):

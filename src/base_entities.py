@@ -22,6 +22,7 @@ class Star(BasicEntity):
             init_year: int,
             move_longitude_seconds: float,
             move_latitude_seconds: float,
+            magnitude: float,
             spectral_class: str,
             reference: dict,
             constellation_name: str = None
@@ -33,16 +34,17 @@ class Star(BasicEntity):
         self.init_year = init_year
         self.move_longitude = move_longitude_seconds / 3600
         self.move_latitude = move_latitude_seconds / 3600
+        self.magnitude = magnitude
         self._size_d = 7
-        self.size = 0
+        self.size = (self._size_d - magnitude) * 1.5
         self.color = [0.0, 0.0, 0.0, 0.0]
-        self._set_size_and_color_by(spectral_class)
+        self._set_color_by(spectral_class)
         self.reference = reference
         self.constellation_name = constellation_name
         self.position = None
         self.set_time_span(init_year)
 
-    def _set_size_and_color_by(self, spectral_class: str) -> None:
+    def _set_color_by(self, spectral_class: str) -> None:
         temp_class_letter = spectral_class[0]
         if temp_class_letter == "g":
             temp_class_letter = spectral_class[1]
@@ -54,19 +56,19 @@ class Star(BasicEntity):
             case "G": self.color = [1.0, 1.0, 0.2, 1.0]
             case "K": self.color = [1.0, 0.6, 0.2, 1.0]
             case "M": self.color = [1.0, 0.2, 0.2, 1.0]
-        if "III" in spectral_class:
-            self.size = self._size_d - 3
-        elif "IV" in spectral_class:
-            self.size = self._size_d - 4
-        elif "V" in spectral_class:
-            self.size = self._size_d - 5
-        elif "II" in spectral_class:
-            self.size = self._size_d - 2
-        elif "I" in spectral_class:
-            self.size = self._size_d - 1
-        else:
-            self.size = 0
-            print(f"Unmatched star spectral class: {spectral_class}")
+        # if "III" in spectral_class:
+        #     self.size = self._size_d - 3
+        # elif "IV" in spectral_class:
+        #     self.size = self._size_d - 4
+        # elif "V" in spectral_class:
+        #     self.size = self._size_d - 5
+        # elif "II" in spectral_class:
+        #     self.size = self._size_d - 2
+        # elif "I" in spectral_class:
+        #     self.size = self._size_d - 1
+        # else:
+        #     self.size = 0
+        #     print(f"Unmatched star spectral class: {spectral_class}")
 
     def set_time_span(self, year: int) -> None:
         delta_years = year - self.init_year
@@ -140,3 +142,12 @@ class Constellation(BasicEntity):
     def draw_shape(self):
         for polyline in self.star_polylines:
             draw_polyline(polyline, self._get_color())
+
+
+class Earth(BasicEntity):
+    def __init__(self, name: str = "Earth"):
+        super().__init__(name)
+        self.pos = PointVector(-55, 0, 0)
+
+    def draw_shape(self):
+        draw_earth(self)

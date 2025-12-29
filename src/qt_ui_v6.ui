@@ -128,71 +128,11 @@
           </sizepolicy>
          </property>
          <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
+          <enum>Qt::FocusPolicy::NoFocus</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QTextBrowser" name="star_info_page"/>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string> Magnitude max</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="double_set_magn_max">
-              <property name="minimum">
-               <double>-2.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>6.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>6.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string> Magnitude min</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="double_set_magn_min">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimum">
-               <double>-2.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>6.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>-2.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QTextBrowser" name="textBrowser"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -211,12 +151,12 @@
                </size>
               </property>
               <property name="text">
-               <string> Position Latitude</string>
+               <string> Latitude</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="double_set_pos_latitude">
+             <widget class="QDoubleSpinBox" name="double_edit_latitude">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                 <horstretch>0</horstretch>
@@ -224,10 +164,10 @@
                </sizepolicy>
               </property>
               <property name="minimum">
-               <double>-89.989999999999995</double>
+               <double>-90.000000000000000</double>
               </property>
               <property name="maximum">
-               <double>89.989999999999995</double>
+               <double>90.000000000000000</double>
               </property>
               <property name="value">
                <double>0.000000000000000</double>
@@ -253,12 +193,12 @@
                </size>
               </property>
               <property name="text">
-               <string> Position Longitude</string>
+               <string> Longitude</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="double_set_pos_longitude">
+             <widget class="QDoubleSpinBox" name="double_edit_longitude">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                 <horstretch>0</horstretch>
@@ -279,47 +219,43 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="QLabel" name="label_4">
+             <widget class="QLabel" name="label_edit_x">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="minimumSize">
+               <size>
+                <width>35</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="text">
-               <string> Year</string>
+               <string> X</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="double_set_year">
+             <widget class="QDoubleSpinBox" name="double_edit_x">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimum">
-               <double>-99999.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>9999999999.000000000000000</double>
+               <double>-99999.990000000005239</double>
               </property>
               <property name="value">
-               <double>2025.000000000000000</double>
+               <double>0.000000000000000</double>
               </property>
              </widget>
             </item>
            </layout>
-          </item>
-          <item>
-           <widget class="QPushButton" name="button_apply">
-            <property name="text">
-             <string>Применить параметры</string>
-            </property>
-           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -338,23 +274,20 @@
                </size>
               </property>
               <property name="text">
-               <string> View Latitude</string>
+               <string> Y</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="double_set_view_latitude">
+             <widget class="QDoubleSpinBox" name="double_edit_y">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimum">
-               <double>-89.989999999999995</double>
-              </property>
-              <property name="maximum">
-               <double>89.989999999999995</double>
+               <double>-99999.990000000005239</double>
               </property>
               <property name="value">
                <double>0.000000000000000</double>
@@ -380,60 +313,34 @@
                </size>
               </property>
               <property name="text">
-               <string> View Longitude</string>
+               <string> Z</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="double_set_view_longitude">
+             <widget class="QDoubleSpinBox" name="double_edit_z">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimum">
-               <double>0.000000000000000</double>
+               <double>-99999.990000000005239</double>
               </property>
               <property name="maximum">
-               <double>360.000000000000000</double>
+               <double>99999.990000000005239</double>
               </property>
              </widget>
             </item>
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QLabel" name="label_3">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string> FOV (inverse of zoom)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="double_set_view_fov">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimum">
-               <double>5.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>120.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QPushButton" name="button_edit_apply">
+            <property name="text">
+             <string>Применить изменения</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -449,7 +356,7 @@
      <x>0</x>
      <y>0</y>
      <width>888</width>
-     <height>21</height>
+     <height>33</height>
     </rect>
    </property>
    <property name="defaultUp">

@@ -1,5 +1,6 @@
 PyOpenGL
 PyQt5
+PySide6
 numpy
 pytest
 pytest-cov

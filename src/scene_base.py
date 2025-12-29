@@ -33,15 +33,20 @@ class Scene:
         self.app_update = app_update
         self._scene_time = None
         self._stars = []
+        self._filtered_stars = []
         self._constellations = []
         self._active_star = None
         self._active_constellation = None
+        self._magnitude_min = -2
+        self._magnitude_max = 6
+        self.Earth = Earth()
 
     def get_entities(self):
-        for s in self._stars:
+        for s in self._filtered_stars:
             yield s
         for c in self._constellations:
             yield c
+        yield self.Earth
 
     def _add_stars_from_zip(self, path: Path):
         data_stars = parse_star_data_from_zip(path)
@@ -54,12 +59,34 @@ class Scene:
                 init_year=2025,
                 move_longitude_seconds=star_data["move_longitude"],
                 move_latitude_seconds=star_data["move_latitude"],
+                magnitude=star_data["magnitude"],
                 spectral_class=star_data["spectral_class"],
                 reference=star_data,
                 constellation_name="",
             )
             self._stars.append(new_star)
+        self._update_filtered_list_stars()
         print(len(self._stars))
+
+    def _update_filtered_list_stars(self):
+        self._filtered_stars = []
+        for star in self._stars:
+            if self._magnitude_min <= star.magnitude <= self._magnitude_max:
+                self._filtered_stars.append(star)
+
+    def set_magnitude_filter_range(self, min_value: int, max_value: int):
+        self._magnitude_min = min_value
+        self._magnitude_max = max_value
+        self._update_filtered_list_stars()
+
+    def set_position_on_earth(self, latitude: float, longitude: float):
+        self.Earth.pos = PointVector(
+            math.cos(longitude * math.pi / 180 + math.pi) *
+            math.cos(-latitude * math.pi / 180) * 55,
+            math.sin(longitude * math.pi / 180 + math.pi) *
+            math.cos(-latitude * math.pi / 180) * 55,
+            math.sin(-latitude * math.pi / 180) * 55,
+        )
 
     def _add_constellations_from_json(self, path: Path):
         data_constellations = parse_constellation_data_from_json(path)
@@ -117,7 +144,7 @@ class Scene:
                 ),
                 s
             ),
-            self._stars
+            self._filtered_stars
         ))
         if nearest_star[0] > 0.95:
             return nearest_star[1]

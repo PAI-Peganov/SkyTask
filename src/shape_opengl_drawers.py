@@ -64,9 +64,19 @@ def draw_coordinate_sphere_by_position():
     glColor3f(0.1, 0.1, 0.1)
     glLineWidth(0.1)
     quadric = gluNewQuadric()
-    gluSphere(quadric, 55.0, 24, 18)  # случайный радиус, 24 часа, 180 градусов / 10
+    gluSphere(quadric, 55.0, 24, 18)  # 24 часа, 180 градусов / 10
     gluDeleteQuadric(quadric)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
+
+def draw_earth(earth: Earth):
+    glColor3f(0.0, 0.03, 0.1)
+    glPushMatrix()
+    glTranslatef(*earth.pos.np_vector)
+    quadric = gluNewQuadric()
+    gluSphere(quadric, 54.0, 24, 18)
+    gluDeleteQuadric(quadric)
+    glPopMatrix()
 
 
 def draw_light(figure):

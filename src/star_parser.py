@@ -76,9 +76,9 @@ def parse_star_data_from_zip(path: Path) -> list[dict]:
         ]:
             with zip_file.open(filename) as file:
                 for line in file:
-                    new_star = build_star_data(line.decode("utf-8"))
-                    if new_star is not None:
-                        stars.append(new_star)
+                    new_star_data = build_star_data(line.decode("utf-8"))
+                    if new_star_data is not None:
+                        stars.append(new_star_data)
     return stars
 
 

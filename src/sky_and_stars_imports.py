@@ -8,9 +8,6 @@ import math
 import zipfile
 import datetime
 from pathlib import Path
-from astroquery.simbad import Simbad
-from astropy import coordinates
-from astropy import units
 import logging
 logger = logging.getLogger(__name__)
 
@@ -60,6 +57,9 @@ except Exception as e:
 try:
     import numpy as np
     from PIL import Image
+    from astroquery.simbad import Simbad
+    from astropy import coordinates
+    from astropy import units
 except Exception as e:
     print('Not found: "{}".'.format(e),
           file=sys.stderr)
@@ -72,7 +72,6 @@ try:
     from src.shape_opengl_drawers import *
     from src.base_entities import *
     from src.scene_base import *
-    from src.adding_windows import *
     from src.qt_app import *
 except Exception as e:
     print('App modules not found: "{}"'.format(e), file=sys.stderr)

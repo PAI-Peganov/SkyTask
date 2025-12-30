@@ -20,18 +20,7 @@ class GLWidget(QGLWidget, MouseControllerWidget):
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
-        # glEnable(GL_LIGHTING)
-        # glEnable(GL_LIGHT0)
         glClearColor(0.05, 0, 0.1, 1.0)
-        # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [1.0, 1.0, 1.0, 1.0])
-        # Настройка источника света
-        # Направленный свет
-        # glLightfv(GL_LIGHT0, GL_POSITION, [-100.0, 100.0, 100.0, 0.0])
-        # Цвет рассеянного света
-        # glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
-        # Цвет зеркального отражения
-        # glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
-        # включение нормалей
         glEnable(GL_NORMALIZE)
         glEnable(GL_LINE_SMOOTH)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)

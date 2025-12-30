@@ -1,238 +1,95 @@
-from src.sky_and_stars_imports import *
 import unittest
-from unittest.mock import MagicMock
-
-
-class TestExceptions(unittest.TestCase):
-    def test_entity_not_found_exception(self):
-        with self.assertRaises(EntityNotFoundException) as context:
-            raise EntityNotFoundException("test_entity")
-        self.assertEqual(
-            str(context.exception),
-            "Указана несуществующая сущьность test_entity"
-        )
-
-    def test_entity_wrong_type_exception(self):
-        with self.assertRaises(EntityWrongTypeException) as context:
-            raise EntityWrongTypeException("test_entity", "Point", "Segment")
-        self.assertEqual(
-            str(context.exception),
-            "test_entity должна быть Point, а является Segment"
-        )
-
-    def test_empty_field_exception(self):
-        with self.assertRaises(EmptyFieldException) as context:
-            raise EmptyFieldException()
-        self.assertEqual(str(context.exception), "В поле ничего не указано")
-
-    def test_entity_name_already_exists_exception(self):
-        with self.assertRaises(EntityNameAlreadyExistsException) as context:
-            raise EntityNameAlreadyExistsException()
-        self.assertEqual(
-            str(context.exception), "Сущьность с таким именем уже существует"
-        )
+from unittest.mock import patch, mock_open
+from pathlib import Path
+import numpy as np
+from src.base_entities import *
+from src.scene_base import *
 
 
 class TestScene(unittest.TestCase):
-    def setUp(self):
-        self.mock_update = MagicMock()
-        self.scene = Scene(self.mock_update)
 
-    def test_initialization(self):
-        self.assertIsNone(self.scene.path)
-        self.assertEqual(self.scene.app_update, self.mock_update)
-        self.assertEqual(self.scene._entities, {})
-        self.assertEqual(len(self.scene.stack_last_actions), 0)
-        self.assertEqual(len(self.scene.stack_undo_actions), 0)
+    @patch('src.star_parser.parse_star_data_from_zip')
+    def test_add_stars_from_zip(self, mock_parse_star_data_from_zip):
+        mock_parse_star_data_from_zip.return_value = [
+            {
+                "name": "Alpha",
+                "id": "HD12345",
+                "galactic_lon": 10.0,
+                "galactic_lat": 20.0,
+                "move_longitude": 0.1,
+                "move_latitude": 0.1,
+                "magnitude": 4.5,
+                "spectral_class": "G",
+            }
+        ]
 
-    # @patch('builtins.open')
-    # @patch('pickle.load')
-    # def test_load_entities_from_file(self, mock_pickle_load, mock_open):
-    #     mock_pickle_load.return_value = {'test': 'entity'}
-    #     self.scene.load_entities_from_file(Path("test.pkl"))
-    #     mock_open.assert_called_once_with(Path("test.pkl"), 'rb')
-    #     self.assertEqual(self.scene.entities, {'test': 'entity'})
-    #     self.mock_update.assert_called_once()
-    #
-    # @patch('builtins.open')
-    # @patch('pickle.dump')
-    # def test_save_entities_to_file(self, mock_pickle_dump, mock_open):
-    #     self.scene.entities = {'test': 'entity'}
-    #     self.scene.save_entities_to_file(Path("test.pkl"))
-    #     mock_open.assert_called_once_with(Path("test.pkl"), 'wb')
-    #     mock_pickle_dump.assert_called_once_with(
-    #         {'test': 'entity'}, mock_open.return_value
-    #     )
+        scene = Scene()
+        mock_path = Path("test_stars.zip")
+        scene._add_stars_from_zip(mock_path)
 
-    def test_check_contains_errors_empty_field(self):
-        with self.assertRaises(EmptyFieldException):
-            self.scene.check_contains_errors(("", PointVector))
+        self.assertEqual(len(scene._stars), 1)
+        self.assertEqual(scene._stars[0].name, "Alpha")
+        self.assertEqual(scene._stars[0].hd_number, "HD12345")
 
-    def test_check_contains_errors_entity_not_found(self):
-        with self.assertRaises(EntityNotFoundException):
-            self.scene.check_contains_errors(("nonexistent", PointVector))
+    @patch('src.star_parser.parse_constellation_data_from_json')
+    def test_add_constellations_from_json(self, mock_parse_constellation_data_from_json):
+        mock_parse_constellation_data_from_json.return_value = [
+            {"name": "Orion", "lines": [["HD12345", "HD67890"]]}
+        ]
 
-    def test_check_contains_errors_wrong_type(self):
-        self.scene._entities['test'] = "not_a_point"
-        with self.assertRaises(EntityWrongTypeException):
-            self.scene.check_contains_errors(("test", PointVector))
+        scene = Scene()
+        mock_path_stars = Path("test_stars.zip")
+        mock_path_constellations = Path("test_constellations.json")
+        scene._add_stars_from_zip(mock_path_stars)
+        scene._add_constellations_from_json(mock_path_constellations)
 
-    def test_check_contains_errors_name_exists(self):
-        self.scene._entities['existing'] = "something"
-        with self.assertRaises(EntityNameAlreadyExistsException):
-            self.scene.check_contains_errors(new_entity="existing")
+        self.assertEqual(len(scene._constellations), 1)
+        self.assertEqual(scene._constellations[0].name, "Orion")
+        self.assertEqual(len(scene._constellations[0].star_polylines), 1)
 
-    def test_add_point(self):
-        self.scene.add_point("test_point", 1.0, 2.0, 3.0)
-        self.assertIn("test_point", self.scene._entities)
-        self.mock_update.assert_called_once()
+    def test_set_magnitude_filter_range(self):
+        scene = Scene()
 
-    def test_add_light(self):
-        self.scene.add_light("test_light", "lightGL", 1.0, 2.0, 3.0)
-        self.assertIn("test_light", self.scene._entities)
-        self.mock_update.assert_called_once()
+        scene.set_magnitude_filter_range(4, 6)
+        self.assertEqual(scene._magnitude_min, 4)
+        self.assertEqual(scene._magnitude_max, 6)
 
-    def test_add_segment(self):
-        self.scene.add_point("point_a", 0.0, 0.0, 0.0)
-        self.scene.add_point("point_b", 1.0, 1.0, 1.0)
-        self.scene.add_segment("test_segment", "point_a", "point_b")
-        self.assertIn("test_segment", self.scene._entities)
-        self.mock_update.assert_called()
-
-    def test_add_figure2(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.5, 1.0, 0.0)
-        self.scene.add_figure2("test_figure", ["point1", "point2", "point3"])
-        self.assertIn("test_figure", self.scene._entities)
-        self.mock_update.assert_called()
-
-    def test_add_figure2_n(self):
-        self.scene.add_figure2_n("test_figure", 4, 1.0)
-        self.assertIn("test_figure", self.scene._entities)
-        self.assertEqual(
-            len([k for k in self.scene._entities.keys()
-                 if k.startswith("figure2_point_test_figure_")]), 4
+        star = Star(
+            name="Alpha", hd_number="HD12345", longitude=0, latitude=0,
+            init_year=2000, move_longitude_seconds=0.1, move_latitude_seconds=0.1,
+            magnitude=5, spectral_class="G", reference={}, constellation_name=""
         )
-        self.mock_update.assert_called()
+        scene._stars.append(star)
+        scene._update_filtered_list_stars()
+        self.assertEqual(len(scene._filtered_stars), 1)
 
-    def test_add_plane_by_points(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.0, 1.0, 0.0)
-        self.scene.add_plane_by_points(
-            "test_plane", "point1", "point2", "point3"
+    def test_set_position_on_earth(self):
+        scene = Scene()
+        scene.set_position_on_earth(latitude=45.0, longitude=90.0)
+
+        expected_position = PointVector(
+            math.cos(90.0 * math.pi / 180 + math.pi) *
+            math.cos(-45.0 * math.pi / 180) * 55,
+            math.sin(90.0 * math.pi / 180 + math.pi) *
+            math.cos(-45.0 * math.pi / 180) * 55,
+            math.sin(-45.0 * math.pi / 180) * 55,
         )
-        self.assertIn("test_plane", self.scene._entities)
-        self.mock_update.assert_called()
+        np.testing.assert_array_equal(scene.Earth.pos.np_vector, expected_position.np_vector)
 
-    def test_add_plane_by_point_and_segment(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.0, 1.0, 0.0)
-        self.scene.add_segment("test_segment", "point2", "point3")
-        self.scene.add_plane_by_point_and_segment(
-            "test_plane", "point1", "test_segment"
+    def test_get_star_nearest_to(self):
+        scene = Scene()
+
+        star = Star(
+            name="Beta", hd_number="HD67890", longitude=10.0, latitude=20.0,
+            init_year=2000, move_longitude_seconds=0.1, move_latitude_seconds=0.1,
+            magnitude=5, spectral_class="K", reference={}, constellation_name=""
         )
-        self.assertIn("test_plane", self.scene._entities)
-        self.mock_update.assert_called()
+        scene._filtered_stars.append(star)
 
-    def test_add_plane_by_plane(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.0, 1.0, 0.0)
-        self.scene.add_plane_by_points(
-            "base_plane", "point1", "point2", "point3"
-        )
-        self.scene.add_point("new_point", 0.0, 0.0, 1.0)
-        self.scene.add_plane_by_plane("test_plane", "new_point", "base_plane")
-        self.assertIn("test_plane", self.scene._entities)
-        self.mock_update.assert_called()
+        ray = PointVector(1.0, 1.0, 1.0)
+        nearest_star = scene._get_star_nearest_to(ray)
 
-    def test_add_contur_to_plane(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.0, 1.0, 0.0)
-        self.scene.add_plane_by_points(
-            "test_plane", "point1", "point2", "point3"
-        )
-        self.scene.add_segment("segment1", "point1", "point2")
-        self.scene.add_segment("segment2", "point2", "point3")
-        self.scene.add_segment("segment3", "point3", "point1")
-        self.scene.add_contur_to_plane(
-            "test_plane", ["segment1", "segment2", "segment3"]
-        )
-        self.assertEqual(len(self.scene._entities["test_plane"].contur), 1)
-        self.mock_update.assert_called()
-
-    def test_add_contur_n_to_plane(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.0, 1.0, 0.0)
-        self.scene.add_plane_by_points(
-            "test_plane", "point1", "point2", "point3"
-        )
-        self.scene.add_contur_n_to_plane("test_plane", 4, 1.0)
-        self.assertEqual(len(self.scene._entities["test_plane"].contur), 1)
-        self.mock_update.assert_called()
-
-    def test_add_figure3(self):
-        self.scene.add_point("point1", 0.0, 0.0, 0.0)
-        self.scene.add_point("point2", 1.0, 0.0, 0.0)
-        self.scene.add_point("point3", 0.5, 1.0, 0.0)
-        self.scene.add_figure2("face1", ["point1", "point2", "point3"])
-        self.scene.add_figure3("test_figure3", ["face1"])
-        self.assertIn("test_figure3", self.scene._entities)
-        self.mock_update.assert_called()
-
-    def test_add_prism_n(self):
-        self.scene.add_prism_n("test_prism", 4, 1.0, 2.0)
-        self.assertIn("test_prism", self.scene._entities)
-        self.assertEqual(
-            len([k for k in self.scene._entities.keys()
-                 if k.startswith("pnt_upr_test_prism_")]), 4
-        )
-        self.assertEqual(
-            len([k for k in self.scene._entities.keys()
-                 if k.startswith("pnt_lwr_test_prism_")]), 4
-        )
-        self.mock_update.assert_called()
-
-    def test_add_pyramid_n(self):
-        self.scene.add_pyramid_n("test_pyramid", 4, 1.0, 2.0)
-        self.assertIn("test_pyramid", self.scene._entities)
-        self.assertEqual(
-            len([k for k in self.scene._entities.keys()
-                 if k.startswith("pnt_lwr_test_pyramid_")]), 4
-        )
-        self.assertIn("pnt_upr_test_pyramid", self.scene._entities)
-        self.mock_update.assert_called()
-
-    def test_add_sphere_nm(self):
-        self.scene.add_sphere_nm("test_sphere", 4, 3, 1.0)
-        self.assertIn("test_sphere", self.scene._entities)
-        self.assertIn("pnt_up_test_sphere", self.scene._entities)
-        self.assertIn("pnt_down_test_sphere", self.scene._entities)
-        self.mock_update.assert_called()
-
-
-class TestCollinearCheck(unittest.TestCase):
-    def test_is_point_collinear_true(self):
-        p1 = MagicMock(x=0.0, y=0.0, z=0.0)
-        p2 = MagicMock(x=1.0, y=0.0, z=0.0)
-        p3 = MagicMock(x=2.0, y=0.0, z=0.0)
-        self.assertTrue(is_point_collinear(p1, p2, p3))
-
-    def test_is_point_collinear_false(self):
-        p1 = MagicMock(x=0.0, y=0.0, z=0.0)
-        p2 = MagicMock(x=1.0, y=0.0, z=0.0)
-        p3 = MagicMock(x=0.0, y=1.0, z=0.0)
-        self.assertFalse(is_point_collinear(p1, p2, p3))
-
-    def test_is_point_collinear_less_than_3_points(self):
-        p1 = MagicMock(x=0.0, y=0.0, z=0.0)
-        p2 = MagicMock(x=1.0, y=0.0, z=0.0)
-        self.assertTrue(is_point_collinear(p1, p2))
+        self.assertEqual(nearest_star, star)
 
 
 if __name__ == '__main__':
